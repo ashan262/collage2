@@ -152,14 +152,6 @@ app.use("/api/examinations", adminExaminationRoutes);
 app.use("/api/admin/admissions", adminAdmissionRoutes);
 app.use("/api/admin/activities", adminActivityRoutes);
 app.use("/api/admin/roll-numbers", adminRollNumbersRoutes);
-// Serve React frontend in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client", "build")));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
-  });
-}
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -170,17 +162,27 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Error handling middleware
+// Serve React frontend in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "..","client", "dist")));
+
+  
+  app.get(/^\/(?!api).*/, (req, res) => {
+     
+    res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  });
+} 
+
+
 app.use((err, req, res, next) => {
-  if (process.env.NODE_ENV === "development") {
-    console.error(err.stack);
-  }
+  console.error("ERROR DETAILS:", err);
+  console.error("ERROR STACK:", err.stack);
+  
   res.status(500).json({
     message: "Something went wrong!",
-    error: process.env.NODE_ENV === "development" ? err.message : {},
+    error: process.env.NODE_ENV === "development" ? err.message : err.message // Show error in production temporarily
   });
 });
-
 // 404 handler - must be the last route
 app.use((req, res) => {
   res.status(404).json({ message: "API endpoint not found" });
