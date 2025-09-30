@@ -162,18 +162,28 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Serve React frontend in production
+// // Serve React frontend in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "..","client", "dist")));
 
   
   app.get(/^\/(?!api).*/, (req, res) => {
+  // app.get("/", (req, res) => {
      
-    res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+    res.sendFile(path.join(__dirname, "..","client", "dist", "index.html"));
   });
 } 
 
 
+app.use((err, req, res, next) => {
+  console.error("ERROR DETAILS:", err);
+  console.error("ERROR STACK:", err.stack);
+  
+  res.status(500).json({
+    message: "Something went wrong!",
+    error: process.env.NODE_ENV === "development" ? err.message : "Internal server error"
+  });
+});
 app.use((err, req, res, next) => {
   console.error("ERROR DETAILS:", err);
   console.error("ERROR STACK:", err.stack);
